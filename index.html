@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>申诉助手</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&display=swap');
@@ -54,14 +54,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Status Bar ── */
-.sbar {
-  height: 50px; padding: 14px 26px 0;
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 13px; font-weight: 600; color: var(--text);
-  background: var(--bg); flex-shrink: 0;
+
+
+/* ── iOS safe area top spacer ── */
+.safe-top {
+  height: env(safe-area-inset-top, 44px);
+  background: var(--bg);
+  flex-shrink: 0;
 }
-.sbar-r { display: flex; align-items: center; gap: 6px; font-size: 12px; }
 
 /* ── Top Nav ── */
 .topnav {
@@ -82,8 +82,7 @@ body {
 .agent-online { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; margin-top: 1px; }
 .online-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: blink 2s ease infinite; }
 @keyframes blink { 0%,100%{opacity:1}50%{opacity:.35} }
-.nav-icon { width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--text3); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background .15s; }
-.nav-icon:hover { background: var(--border-sm); }
+
 
 /* ── Step Bar ── */
 .stepbar {
@@ -264,96 +263,117 @@ body {
   background: var(--bg);
   border-top: 1px solid var(--border-sm);
   flex-shrink: 0;
-  padding: 10px 14px 20px;
+  padding: 10px 16px calc(env(safe-area-inset-bottom, 20px) + 10px);
 }
 
-/* Input row */
+/* Single unified input row */
 .ibar-row {
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
+  align-items: center;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 10px 10px 10px 14px;
-  transition: border-color .2s;
+  border-radius: 24px;
+  padding: 0 6px 0 16px;
+  min-height: 46px;
+  transition: border-color .2s, box-shadow .2s;
 }
-.ibar-row:focus-within { border-color: #C8C8C6; }
-.ibar-row.recording { border-color: var(--accent); background: var(--accent-dim); }
+.ibar-row:focus-within {
+  border-color: #C8C8C6;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.ibar-row.recording {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  box-shadow: 0 0 0 3px rgba(28,100,242,.08);
+}
 
+/* Textarea */
 .txt {
-  flex: 1; border: none; background: transparent;
+  flex: 1;
+  border: none; background: transparent;
   font-size: 15px; font-family: var(--font); color: var(--text);
-  outline: none; resize: none; line-height: 1.6;
-  padding: 0; min-height: 24px; max-height: 120px;
-  overflow-y: auto; display: block;
+  outline: none; resize: none;
+  line-height: 22px;
+  padding: 12px 0;
+  min-height: 46px; max-height: 120px;
+  overflow-y: auto;
+  display: block;
 }
 .txt::-webkit-scrollbar { display: none; }
-.txt::placeholder { color: var(--text3); font-size: 15px; }
+.txt::placeholder { color: var(--text3); }
 
+/* Voice recording hint */
 .voice-hint {
-  flex: 1; font-size: 14px; color: var(--accent);
-  padding: 2px 0; display: none; line-height: 1.6;
+  flex: 1; font-size: 15px; color: var(--accent);
+  display: none; line-height: 22px;
+  padding: 12px 0;
 }
 .voice-hint.show { display: block; }
 
-/* Send button — hidden until text entered */
-.send-b {
-  width: 30px; height: 30px; border-radius: 50%;
-  border: none; background: var(--accent); color: #fff;
-  font-size: 16px; cursor: pointer; flex-shrink: 0;
-  display: none; align-items: center; justify-content: center;
-  transition: opacity .15s, transform .15s;
-}
-.send-b.visible { display: flex; animation: popIn .18s ease; }
-@keyframes popIn { from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
-.send-b:active { transform: scale(.88); }
-
-/* Tool row */
-.ibar-tools {
-  display: flex; align-items: center;
-  justify-content: space-between;
-  padding: 6px 2px 0;
-}
-.tools-left, .tools-right { display: flex; align-items: center; }
-
-.tool-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: none; background: transparent; color: var(--text2);
-  cursor: pointer; font-size: 19px;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .12s;
-  user-select: none; -webkit-user-select: none;
-}
-.tool-btn:active { background: var(--border); transform: scale(.9); }
-
-/* Mic pill */
-.mic-pill {
-  display: flex; align-items: center; gap: 5px;
-  padding: 6px 14px 6px 11px;
-  border-radius: 100px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+/* Mic button */
+.mic-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--text);
+  color: #fff;
   cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s, transform .1s;
   user-select: none; -webkit-user-select: none;
-  transition: all .15s;
+  margin-left: 6px;
+  align-self: center;
 }
-.mic-pill:active { background: var(--border-sm); transform: scale(.97); }
-.mic-pill.held { background: var(--accent); border-color: var(--accent); animation: micring 1s ease infinite; }
-@keyframes micring { 0%,100%{box-shadow:0 0 0 0 rgba(28,100,242,.3)} 50%{box-shadow:0 0 0 8px rgba(28,100,242,0)} }
-.mic-pill-ico { font-size: 15px; line-height: 1; }
-.mic-pill-lbl { font-size: 13px; color: var(--text2); font-family: var(--font); }
-.mic-pill.held .mic-pill-lbl { color: #fff; }
-.mic-pill.held .mic-pill-lbl-text { display: none; }
-.mic-pill-wave { display: none; align-items: center; gap: 2px; height: 14px; }
-.mic-pill.held .mic-pill-wave { display: flex; }
-.mwbar { width: 2.5px; border-radius: 2px; background: #fff; animation: wvanim .55s ease-in-out infinite; }
-.mwbar:nth-child(1){height:4px;animation-delay:0s}
+.mic-btn:active { transform: scale(.9); }
+.mic-btn.held {
+  background: var(--accent);
+  animation: micglow 1.1s ease infinite;
+}
+@keyframes micglow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(28,100,242,.35); }
+  50%      { box-shadow: 0 0 0 7px rgba(28,100,242,0); }
+}
+.mic-btn svg { width: 20px; height: 20px; }
+
+/* Wave bars — shown when held, hidden otherwise */
+.mic-wave {
+  display: none;
+  align-items: center; gap: 2px; height: 14px;
+}
+.mic-btn.held .mic-wave { display: flex; }
+.mic-btn.held .mic-ico { display: none; }
+.mwbar {
+  width: 2px; border-radius: 2px; background: #fff;
+  animation: wvanim .5s ease-in-out infinite;
+}
+.mwbar:nth-child(1){height:4px;animation-delay:.00s}
 .mwbar:nth-child(2){height:9px;animation-delay:.07s}
 .mwbar:nth-child(3){height:13px;animation-delay:.14s}
 .mwbar:nth-child(4){height:9px;animation-delay:.21s}
-.mwbar:nth-child(5){height:5px;animation-delay:.28s}
-@keyframes wvanim{0%,100%{transform:scaleY(.3);opacity:.45}50%{transform:scaleY(1);opacity:1}}
+.mwbar:nth-child(5){height:4px;animation-delay:.28s}
+@keyframes wvanim{0%,100%{transform:scaleY(.3);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+
+/* Send button — appears when text present */
+.send-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-left: 2px;
+  transition: opacity .15s, transform .15s;
+}
+.send-btn.visible {
+  display: flex;
+  animation: popIn .16s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+.send-btn:active { transform: scale(.88); opacity: .85; }
+.send-btn svg { width: 16px; height: 16px; }
 
 /* ── Voice panel ── */
 .vpanel { position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 28px;display:none;flex-direction:column;align-items:center;gap:16px;box-shadow:0 -6px 30px rgba(0,0,0,.1);z-index:99; }
@@ -388,19 +408,16 @@ body {
 <body>
 <div class="phone" id="phone">
 
-  <div class="sbar">
-    <span>9:41</span>
-    <div class="sbar-r"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
-  </div>
 
+
+  <div class="safe-top"></div>
   <div class="topnav">
     <div class="agent-ava">⚖</div>
     <div class="agent-meta">
       <div class="agent-name">申诉助手</div>
       <div class="agent-online"><span class="online-dot"></span>在线 · 随时为你服务</div>
     </div>
-    <button class="nav-icon">≡</button>
-    <button class="nav-icon">···</button>
+
   </div>
 
   <div class="stepbar">
@@ -470,9 +487,9 @@ body {
                 <span class="mb mb-ok">已就绪</span>
               </div>
               <div class="mr">
-                <div class="mi">📰</div>
-                <div style="flex:1"><div class="mn">原始新闻来源</div><div class="ms">截图 / PDF / 视频均可</div></div>
-                <span class="mb mb-nd" id="badge-news">待上传</span>
+                <div class="mi">📄</div>
+                <div style="flex:1"><div class="mn">历史正常内容</div><div class="ms">已自动抓取 3 条</div></div>
+                <span class="mb mb-ok">已就绪</span>
               </div>
               <div class="mr">
                 <div class="mi">📝</div>
@@ -480,14 +497,14 @@ body {
                 <span class="mb mb-ai">AI填写</span>
               </div>
               <div class="mr">
-                <div class="mi">📄</div>
-                <div style="flex:1"><div class="mn">历史正常内容</div><div class="ms">已自动抓取 3 条</div></div>
-                <span class="mb mb-ok">已就绪</span>
+                <div class="mi">📰</div>
+                <div style="flex:1"><div class="mn">原创作品证明</div><div class="ms">照片/视频拍摄参数 · 需上传</div></div>
+                <span class="mb mb-nd" id="badge-news">待上传</span>
               </div>
               <div class="upload-zone" id="upload-zone" onclick="handleUpload()">
                 <div style="font-size:22px;margin-bottom:4px;">＋</div>
-                上传新闻来源文件
-                <div class="upload-hint">支持图片、视频、音频、PDF · 长按麦克风语音说明来源</div>
+                上传原创作品证明
+                <div class="upload-hint">请上传照片或视频的拍摄参数信息，作品截图需要和参数信息出现在同一画面内</div>
               </div>
             </div>
           </div>
@@ -505,59 +522,44 @@ body {
 
   <div class="qbar" id="qbar">
     <button class="qbtn" onclick="handleUpload()">上传截图</button>
-    <button class="qbtn" onclick="qreply('有什么帮助')">有什么帮助</button>
-    <button class="qbtn" onclick="qreply('查看申诉案例')">查看案例</button>
+    <button class="qbtn" onclick="qreply(this,'违规详情')">违规详情</button>
   </div>
 
   <div class="ibar">
-    <!-- Input row -->
     <div class="ibar-row" id="iwrap">
       <textarea class="txt" id="inp"
-        placeholder="发消息或按住说话…"
+        placeholder="发消息或按住说话..."
         oninput="onInput(this)"
         onkeydown="handleKey(event)"></textarea>
-      <span class="voice-hint" id="vhint">🎙 正在录音，松开发送…</span>
-      <button class="send-b" id="sendBtn" onclick="sendMsg()">↑</button>
-    </div>
-    <!-- Tool row -->
-    <div class="ibar-tools">
-      <div class="tools-left">
-        <button class="tool-btn" onclick="handleUpload()" title="上传文件">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
-        </button>
-        <button class="tool-btn" title="AI 创作">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-        </button>
-        <button class="tool-btn" onclick="handleUpload()" title="相册">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-        </button>
-      </div>
+      <span class="voice-hint" id="vhint">松开发送，滑动取消</span>
 
-      <!-- Centre mic pill -->
-      <div class="mic-pill" id="micBtn"
+      <!-- Mic button -->
+      <button class="mic-btn" id="micBtn"
         onmousedown="startVoice(event)"
         onmouseup="endVoice(event)"
         ontouchstart="startVoice(event)"
         ontouchend="endVoice(event)">
-        <span class="mic-pill-ico">🎙</span>
-        <span class="mic-pill-lbl">
-          <span class="mic-pill-lbl-text">按住说话</span>
-          <span class="mic-pill-wave">
-            <span class="mwbar"></span><span class="mwbar"></span>
-            <span class="mwbar"></span><span class="mwbar"></span>
-            <span class="mwbar"></span>
-          </span>
+        <span class="mic-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="12" rx="3" fill="#fff" stroke="none"/>
+            <path d="M5 10a7 7 0 0 0 14 0"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="9" y1="22" x2="15" y2="22"/>
+          </svg>
         </span>
-      </div>
+        <span class="mic-wave">
+          <span class="mwbar"></span><span class="mwbar"></span>
+          <span class="mwbar"></span><span class="mwbar"></span>
+          <span class="mwbar"></span>
+        </span>
+      </button>
 
-      <div class="tools-right">
-        <button class="tool-btn" title="表情">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-        </button>
-        <button class="tool-btn" title="更多">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-        </button>
-      </div>
+      <!-- Send button (hidden by default) -->
+      <button class="send-btn" id="sendBtn" onclick="sendMsg()">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 4l8 16-8-4-8 4 8-16z"/>
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -595,11 +597,13 @@ body {
 const $ = id => document.getElementById(id);
 
 /* ── State ── */
-let currentStage = 2;   // 1=了解原因 2=准备材料 3=填写理由 4=提交申诉
+let currentStage = 2;
 let uploadDone = false;
 let draftGenerated = false;
 let previewGenerated = false;
 let voiceHeld = false;
+let manualMode = null;        // null | 'awaiting_reason' | 'awaiting_more'
+let manualReasons = [];       // collected user inputs in manual mode
 
 /* ── Helpers ── */
 function scrollB(delay=60) {
@@ -610,6 +614,9 @@ function onInput(el) {
   // Auto-resize
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  // Multi-line: align buttons to bottom; single-line: keep centered
+  const wrap = $('iwrap');
+  wrap.style.alignItems = el.scrollHeight > 40 ? 'flex-end' : 'center';
   // Toggle send button visibility
   const sendBtn = $('sendBtn');
   if (el.value.trim().length > 0) {
@@ -619,7 +626,7 @@ function onInput(el) {
   }
 }
 
-function autoResize(el) { onInput(el); } // backwards compat
+function autoResize(el) { onInput(el); }
 
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
@@ -667,18 +674,22 @@ function setQ(arr) {
 }
 
 function qreply(btn, text) {
-  // Context-aware replies
   const replies = {
-    '继续上传': () => { addUser('我还有更多材料要上传'); typeThen(800, () => addAgent('好的，你可以继续上传更多文件（图片、视频、音频、PDF均可）。上传完成后点击"已上传完成"。')); },
-    '已上传完成': () => proceedStage3(),
-    '跳过': () => proceedStage3(),
-    '生成提交预览': () => { if (draftGenerated) previewSubmit(); else addAgent('请先生成或填写申诉理由草稿。'); },
-    '确认提交': () => { if (previewGenerated) submitFinal(); },
-    '返回修改': () => goBackDraft(),
-    '查看申诉案例': () => { addUser(text); typeThen(900, () => addAgent('已成功申诉的案例主要有两类：①引用权威媒体被误判——提供截图后平均 2 天解除；②创作内容被误识别——补充创作说明后通过率达 82%。')); },
+    '违规详情':         () => { addUser('查看违规详情'); typeThen(800, () => addAgent('本次违规记录如下：<br><br>• <b>违规类型：</b>虚假信息传播<br>• <b>依据条款：</b>《社区内容规范》第 3.2 条<br>• <b>处罚措施：</b>内容下架 + 限流 7 天<br>• <b>涉及内容：</b>「关于XX政策解读」帖子<br>• <b>处罚时间：</b>2024-01-15<br><br>如有异议可继续完成申诉流程。')); },
+    '已上传完成':       () => proceedStage3(),
+    '跳过':             () => proceedStage3(),
+    '生成提交预览':     () => { if (draftGenerated) previewSubmit(); else addAgent('请先生成或填写申诉理由草稿。'); },
+    '确认提交':         () => { if (previewGenerated) submitFinal(); },
+    '返回修改':         () => goBackDraft(),
+    // Manual draft flow
+    '没有了，帮我整理': () => { addUser('没有了，帮我整理'); compileManualDraft(); },
+    '不需要补充，直接提交预览': () => { addUser('不需要补充，直接提交预览'); compileManualDraft(); },
+    '我还想补充':       () => { addUser('我还想补充'); typeThen(600, () => { addAgent('好的，请继续说。'); }); },
+    '查看申诉案例':     () => { addUser(text); typeThen(900, () => addAgent('已成功申诉的案例主要有两类：①引用权威媒体被误判——提供截图后平均 2 天解除；②创作内容被误识别——补充创作说明后通过率达 82%。')); },
   };
   if (replies[text]) { replies[text](); return; }
   addUser(text);
+  if (manualMode) { handleManualInput(text); return; }
   typeThen(900, () => addAgent('好的，我来帮你处理这个问题。'));
 }
 
@@ -730,10 +741,8 @@ function handleUpload() {
 }
 
 /* ── Stage 3: 填写理由 ── */
-let stage3Injected = false;
 function proceedStage3() {
-  if (stage3Injected) return; // prevent duplicate injection
-  stage3Injected = true;
+  if ($('framework-card')) return; // already injected
   setStep(3);
 
   typeThen(900, () => {
@@ -741,7 +750,7 @@ function proceedStage3() {
     d.className = 'row agent';
     d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
       材料已就绪。接下来写申诉理由——建议按以下框架来，审核员更容易理解：
-      <div class="card">
+      <div class="card" id="framework-card">
         <div class="ch">✍ 申诉理由框架</div>
         <div class="cb">
           <div class="fw"><div class="fw-n">1</div><div><div class="fw-t">为什么认为自己没违规</div><div class="fw-h">内容依据、来源权威性，反驳判定逻辑</div></div></div>
@@ -756,15 +765,13 @@ function proceedStage3() {
       </div>
     </div></div>`;
     c.appendChild(d); scrollB();
-    setQ(['AI帮我起草', '自己写', '参考例句']);
+    setQ(['AI帮我起草', '自己写']);
   });
 }
 
 /* ── Draft generation ── */
-let draftInjected = false;
 function generateDraft() {
-  if (draftInjected) return;
-  draftInjected = true;
+  if ($('draftField')) return; // already injected
   addUser('请帮我起草申诉理由');
 
   typeThen(1600, () => {
@@ -800,16 +807,69 @@ function generateDraft() {
 }
 
 function manualWrite() {
+  // Enter manual input mode
+  manualMode = 'awaiting_reason';
   typeThen(800, () => {
-    addAgent('好的，你可以直接在输入框里描述情况，我会帮你整理成申诉理由。');
-    setQ(['我说完了，帮我整理', 'AI帮我起草']);
+    addAgent('好的，请直接描述你的申诉理由。<br><br>可以说说：<b>为什么认为自己没违规</b>，或者<b>内容的创作背景</b>——随便聊，我来帮你整理成正式申诉文字。');
+    setQ(['不需要补充，直接提交预览', 'AI帮我起草']);
+  });
+}
+
+function handleManualInput(text) {
+  // User sent a message while in manual mode
+  if (manualMode === 'awaiting_reason') {
+    // First input received — acknowledge and ask if they want to add more
+    manualMode = 'awaiting_more';
+    manualReasons.push(text);
+    typeThen(900, () => {
+      addAgent('收到！还有想补充的吗？比如账号历史、事件背景等——如果没有，我现在就帮你整理成申诉理由。');
+      setQ(['没有了，帮我整理', '我还想补充']);
+    });
+  } else if (manualMode === 'awaiting_more') {
+    // User added more — collect and offer again
+    manualReasons.push(text);
+    typeThen(900, () => {
+      addAgent('好，已记录。还有要补充的吗？');
+      setQ(['没有了，帮我整理', '我还想补充']);
+    });
+  }
+}
+
+function compileManualDraft() {
+  // Build draft from collected reasons, then go to preview
+  manualMode = null;
+  const combined = manualReasons.join('；');
+  typeThen(1400, () => {
+    draftGenerated = true;
+    const c = $('chat'), d = document.createElement('div');
+    d.className = 'row agent';
+    d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
+      已根据你的描述整理好申诉理由，可以继续修改：
+      <div class="card">
+        <div class="ch">📝 申诉理由草稿</div>
+        <div class="cb">
+          <textarea class="edit-field" id="draftField" rows="6">尊敬的审核团队：
+
+本人对此次违规处理持有异议，特此申诉。
+
+${combined}
+
+恳请平台审核团队重新审视本次内容，感谢您的关注与处理。</textarea>
+          <div class="brow">
+            <button class="btn btn-p" onclick="previewSubmit()">生成提交预览 →</button>
+            <button class="btn btn-g" onclick="aiPolish()">✦ AI 优化语气</button>
+          </div>
+        </div>
+      </div>
+    </div></div>`;
+    c.appendChild(d); scrollB();
+    setQ(['生成提交预览', 'AI优化语气']);
   });
 }
 
 function aiPolish() {
   const field = $('draftField');
   if (!field) { addAgent('请先生成草稿后再优化。'); return; }
-  // Safe replacement: replace known phrases if present, otherwise append a note
   let v = field.value;
   v = v.replace('持有异议，特此申诉', '对此次处理结果存在异议，依据相关规定提起申诉');
   v = v.replace('恳请重新审核，谢谢', '恳请平台审核团队重新审视本次内容，感谢您的关注与处理');
@@ -819,12 +879,11 @@ function aiPolish() {
 }
 
 /* ── Stage 4: Preview & Submit ── */
-let previewInjected = false;
 function previewSubmit() {
   const field = $('draftField');
   if (!field) { addAgent('请先生成或编写申诉理由草稿。'); return; }
-  if (previewInjected) return;
-  previewInjected = true;
+  if ($('preview-card')) return; // already showing
+  draftGenerated = true;
 
   const text = field.value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
   setStep(4);
@@ -833,9 +892,10 @@ function previewSubmit() {
     previewGenerated = true;
     const c = $('chat'), d = document.createElement('div');
     d.className = 'row agent';
+    d.setAttribute('id', 'preview-row');
     d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
       申诉预览如下，确认无误后提交：
-      <div class="card">
+      <div class="card" id="preview-card">
         <div class="ch">📄 提交预览</div>
         <div class="cb">
           <div class="ir"><div class="il">申请人</div><div class="iv">用户_张同学</div></div>
@@ -863,12 +923,12 @@ function previewSubmit() {
 }
 
 function goBackDraft() {
-  // Revert step bar to stage 3
   setStep(3);
-  previewInjected = false; // allow re-preview after editing
   previewGenerated = false;
+  // Remove preview node so it can be re-generated with latest draft content
+  const pr = $('preview-row');
+  if (pr) pr.remove();
   addAgent('好的，你可以继续修改申诉理由草稿。');
-  // Scroll to draft field
   setTimeout(() => {
     const field = $('draftField');
     if (field) { field.focus(); field.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
@@ -897,7 +957,7 @@ function submitFinal() {
       </div>
     </div></div>`;
     c.appendChild(d); scrollB();
-    setQ(['查看进度', '保存记录', '新建申诉']);
+    setQ([]);
   });
 }
 
@@ -909,6 +969,12 @@ function sendMsg() {
   addUser(text);
   inp.value = ''; inp.style.height = 'auto';
   $('sendBtn').classList.remove('visible');
+
+  // Route to manual draft flow if active
+  if (manualMode) {
+    handleManualInput(text);
+    return;
+  }
   typeThen(1000, () => addAgent('收到，我来帮你处理这个问题。'));
 }
 
