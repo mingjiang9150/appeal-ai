@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>申诉助手</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #F7F7F6;
+  --surface: #FFFFFF;
+  --border: #E8E8E6;
+  --border-sm: #F0F0EE;
+  --text: #111;
+  --text2: #555;
+  --text3: #999;
+  --accent: #1C64F2;
+  --accent-bg: #EEF3FD;
+  --accent-dim: #F5F8FF;
+  --green: #0D9448;
+  --green-bg: #EDFBF3;
+  --orange: #C05621;
+  --orange-bg: #FFF7ED;
+  --red: #C53030;
+  --red-bg: #FFF5F5;
+  --user-bg: #1C64F2;
+  --r: 14px;
+  --r-sm: 9px;
+  --font: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --shadow: 0 1px 4px rgba(0,0,0,0.07), 0 0 0 1px var(--border);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: var(--font);
+  background: #DDDDD9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.phone {
+  width: 393px; height: 852px;
+  background: var(--bg);
+  border-radius: 50px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.08);
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+}
+
+
+
+/* ── iOS safe area top spacer ── */
+.safe-top {
+  height: env(safe-area-inset-top, 44px);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+/* ── Top Nav ── */
+.topnav {
+  padding: 6px 16px 10px;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.agent-ava {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--text); color: #fff;
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.agent-meta { flex: 1; }
+.agent-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.agent-online { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+.online-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: blink 2s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.35} }
+
+
+/* ── Step Bar ── */
+.stepbar {
+  padding: 10px 14px 8px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  flex-shrink: 0;
+}
+.step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
+.step:not(:last-child)::after {
+  content:''; position: absolute;
+  top: 9px; left: 55%; width: 90%; height: 1.5px;
+  background: var(--border); z-index: 0; transition: background .3s;
+}
+.step.done:not(:last-child)::after { background: var(--text); }
+.step-dot {
+  width: 19px; height: 19px; border-radius: 50%;
+  background: var(--border); color: var(--text3);
+  font-size: 10px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1; position: relative; transition: all .25s;
+}
+.step.active .step-dot { background: var(--accent); color: #fff; box-shadow: 0 0 0 3px var(--accent-bg); }
+.step.done .step-dot { background: var(--text); color: #fff; }
+.step-lbl { font-size: 10px; color: var(--text3); }
+.step.active .step-lbl { color: var(--accent); font-weight: 500; }
+.step.done .step-lbl { color: var(--text2); }
+
+/* ── Chat ── */
+.chat { flex: 1; overflow-y: auto; padding: 10px 14px 6px; display: flex; flex-direction: column; }
+.chat::-webkit-scrollbar { display: none; }
+
+.row { display: flex; align-items: flex-end; gap: 7px; margin-bottom: 10px; animation: fadeUp .2s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.row.user { flex-direction: row-reverse; }
+
+.ava {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--text); color: #fff;
+  font-size: 12px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.row.user .ava { background: #BFC7D4; color: var(--text); }
+
+.bwrap { max-width: 80%; display: flex; flex-direction: column; gap: 3px; }
+.row.user .bwrap { align-items: flex-end; }
+
+.bubble {
+  padding: 9px 12px; border-radius: 14px;
+  font-size: 13.5px; line-height: 1.65; color: var(--text);
+}
+.row.agent .bubble { background: var(--surface); box-shadow: var(--shadow); border-bottom-left-radius: 3px; }
+.row.user .bubble { background: var(--user-bg); color: #fff; border-bottom-right-radius: 3px; }
+.btime { font-size: 10px; color: var(--text3); padding: 0 3px; }
+
+/* ── Cards ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-top: 8px; }
+.ch { padding: 9px 13px; font-size: 11px; font-weight: 600; color: var(--text2); border-bottom: 1px solid var(--border-sm); display: flex; align-items: center; gap: 5px; letter-spacing:.3px; text-transform: uppercase; }
+.cb { padding: 10px 13px; }
+
+.ir { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border-sm); font-size: 13px; }
+.ir:last-child { border-bottom: none; }
+.il { color: var(--text3); font-size: 11.5px; width: 54px; flex-shrink: 0; padding-top: 1px; }
+.iv { color: var(--text); flex: 1; line-height: 1.5; }
+
+.tag { display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:11.5px;font-weight:500; }
+.tag-o { background:var(--orange-bg);color:var(--orange); }
+.tag-g { background:var(--green-bg);color:var(--green); }
+.tag-b { background:var(--accent-bg);color:var(--accent); }
+
+.notice { background:var(--orange-bg);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--orange);display:flex;gap:6px;margin-top:8px;line-height:1.55; }
+
+/* ── Material rows ── */
+.mr { display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border-sm); }
+.mr:last-child { border-bottom:none; }
+.mi { width:28px;height:28px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0; }
+.mn { font-size:13px;color:var(--text); }
+.ms { font-size:11px;color:var(--text3);margin-top:2px; }
+.mb { font-size:11px;font-weight:500;padding:2px 8px;border-radius:5px;white-space:nowrap; }
+.mb-ok { background:var(--green-bg);color:var(--green); }
+.mb-nd { background:var(--orange-bg);color:var(--orange); }
+.mb-ai { background:var(--accent-bg);color:var(--accent); }
+
+/* ── Upload Zone ── */
+.upload-zone {
+  border: 1.5px dashed var(--border);
+  border-radius: 9px; padding: 14px;
+  text-align: center; cursor: pointer;
+  margin-top: 9px; transition: all .15s;
+  font-size: 12px; color: var(--text3);
+}
+.upload-zone:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.upload-hint { font-size: 11px; color: var(--text3); margin-top: 5px; }
+.upload-zone.done { border-color: var(--green); background: var(--green-bg); color: var(--green); cursor: default; }
+
+/* ── Media card ── */
+.media-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; margin-top: 7px; cursor: pointer;
+  transition: transform .15s;
+}
+.media-card:active { transform: scale(.98); }
+.media-thumb {
+  width: 100%; height: 90px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; position: relative;
+  background: linear-gradient(135deg, #F0F0EE, #E8E8E6);
+}
+.media-overlay { position:absolute;inset:0;display:flex;align-items:center;justify-content:center; }
+.play-btn { width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center; }
+.media-meta { padding: 7px 10px; }
+.media-name { font-size:12px;font-weight:500;color:var(--text); }
+.media-info { font-size:11px;color:var(--text3);margin-top:2px; }
+.ocr-badge { display:inline-flex;align-items:center;gap:4px;background:var(--accent-bg);color:var(--accent);font-size:10.5px;font-weight:500;padding:2px 7px;border-radius:4px;margin-top:4px; }
+
+.ocr-panel { background:var(--accent-dim);border:1px solid #D4E3FA;border-radius:8px;padding:9px 11px;margin-top:7px;font-size:12px;color:var(--text2);line-height:1.65; }
+.ocr-panel-title { font-size:11px;font-weight:600;color:var(--accent);margin-bottom:5px;display:flex;align-items:center;gap:4px; }
+
+/* ── Framework ── */
+.fw { display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--border-sm); }
+.fw:last-child { border-bottom:none; }
+.fw-n { width:19px;height:19px;border-radius:50%;background:var(--border-sm);color:var(--text2);font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px; }
+.fw-t { font-size:13px;color:var(--text);font-weight:500; }
+.fw-h { font-size:11.5px;color:var(--text3);margin-top:3px;line-height:1.5; }
+
+/* ── Edit field ── */
+.edit-field {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 11px;
+  font-size: 13px; line-height: 1.7; color: var(--text);
+  min-height: 80px; outline: none;
+  font-family: var(--font); width: 100%;
+  transition: border-color .15s; resize: none;
+}
+.edit-field:focus { border-color: var(--accent); }
+.edit-field::-webkit-scrollbar { width: 2px; }
+.edit-field::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Preview ── */
+.preview-section { margin-top: 8px; }
+.preview-title { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
+.preview-block { background:var(--bg);border:1px solid var(--border-sm);border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--text2);line-height:1.7;max-height:120px;overflow-y:auto; }
+
+/* ── Submit result ── */
+.result-card { text-align:center;padding:4px 0; }
+.result-ico { font-size:30px;margin-bottom:8px; }
+.result-title { font-size:15px;font-weight:600;color:var(--text);margin-bottom:5px; }
+.result-meta { font-size:13px;color:var(--text2);line-height:1.8; }
+.result-rate { margin-top:10px;background:var(--green-bg);border-radius:8px;padding:9px;font-size:12.5px;color:var(--green); }
+
+/* ── Buttons ── */
+.btn { display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:none;font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .15s; }
+.btn-p { background:var(--accent);color:#fff; }
+.btn-p:hover { opacity:.88; }
+.btn-p:active { transform:scale(.96); }
+.btn-g { background:var(--bg);color:var(--text2);border:1px solid var(--border); }
+.btn-g:hover { background:var(--border-sm); }
+.brow { display:flex;gap:7px;margin-top:11px;flex-wrap:wrap; }
+
+/* ── Typing indicator ── */
+.typing-row { display:flex;align-items:flex-end;gap:7px;margin-bottom:10px; }
+.typing-b { background:var(--surface);box-shadow:var(--shadow);border-radius:14px;border-bottom-left-radius:3px;padding:10px 13px;display:flex;gap:4px;align-items:center; }
+.typing-b span { width:5px;height:5px;border-radius:50%;background:var(--text3);animation:tdot 1s ease infinite; }
+.typing-b span:nth-child(2){animation-delay:.15s}
+.typing-b span:nth-child(3){animation-delay:.3s}
+@keyframes tdot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-4px);opacity:1}}
+
+/* ── Quick replies ── */
+.qbar { padding:7px 14px;display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;border-top:1px solid var(--border-sm);flex-shrink:0;background:var(--bg); }
+.qbar::-webkit-scrollbar { display:none; }
+.qbtn { padding:5px 12px;border-radius:100px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text2);font-family:var(--font);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0; }
+.qbtn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-dim); }
+.qbtn:active { transform:scale(.95); }
+
+/* ── Input bar ── */
+.ibar {
+  background: var(--bg);
+  border-top: 1px solid var(--border-sm);
+  flex-shrink: 0;
+  padding: 10px 16px calc(env(safe-area-inset-bottom, 20px) + 10px);
+}
+
+/* Single unified input row */
+.ibar-row {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 0 6px 0 16px;
+  min-height: 46px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.ibar-row:focus-within {
+  border-color: #C8C8C6;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.ibar-row.recording {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  box-shadow: 0 0 0 3px rgba(28,100,242,.08);
+}
+
+/* Textarea */
+.txt {
+  flex: 1;
+  border: none; background: transparent;
+  font-size: 15px; font-family: var(--font); color: var(--text);
+  outline: none; resize: none;
+  line-height: 22px;
+  padding: 12px 0;
+  min-height: 46px; max-height: 120px;
+  overflow-y: auto;
+  display: block;
+}
+.txt::-webkit-scrollbar { display: none; }
+.txt::placeholder { color: var(--text3); }
+
+/* Voice recording hint */
+.voice-hint {
+  flex: 1; font-size: 15px; color: var(--accent);
+  display: none; line-height: 22px;
+  padding: 12px 0;
+}
+.voice-hint.show { display: block; }
+
+/* Mic button */
+.mic-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--text);
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s, transform .1s;
+  user-select: none; -webkit-user-select: none;
+  margin-left: 6px;
+  align-self: center;
+}
+.mic-btn:active { transform: scale(.9); }
+.mic-btn.held {
+  background: var(--accent);
+  animation: micglow 1.1s ease infinite;
+}
+@keyframes micglow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(28,100,242,.35); }
+  50%      { box-shadow: 0 0 0 7px rgba(28,100,242,0); }
+}
+.mic-btn svg { width: 20px; height: 20px; }
+
+/* Wave bars — shown when held, hidden otherwise */
+.mic-wave {
+  display: none;
+  align-items: center; gap: 2px; height: 14px;
+}
+.mic-btn.held .mic-wave { display: flex; }
+.mic-btn.held .mic-ico { display: none; }
+.mwbar {
+  width: 2px; border-radius: 2px; background: #fff;
+  animation: wvanim .5s ease-in-out infinite;
+}
+.mwbar:nth-child(1){height:4px;animation-delay:.00s}
+.mwbar:nth-child(2){height:9px;animation-delay:.07s}
+.mwbar:nth-child(3){height:13px;animation-delay:.14s}
+.mwbar:nth-child(4){height:9px;animation-delay:.21s}
+.mwbar:nth-child(5){height:4px;animation-delay:.28s}
+@keyframes wvanim{0%,100%{transform:scaleY(.3);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+
+/* Send button — appears when text present */
+.send-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-left: 2px;
+  transition: opacity .15s, transform .15s;
+}
+.send-btn.visible {
+  display: flex;
+  animation: popIn .16s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+.send-btn:active { transform: scale(.88); opacity: .85; }
+.send-btn svg { width: 16px; height: 16px; }
+
+/* ── Voice panel ── */
+.vpanel { position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 28px;display:none;flex-direction:column;align-items:center;gap:16px;box-shadow:0 -6px 30px rgba(0,0,0,.1);z-index:99; }
+.vpanel.show{display:flex;animation:sup .25s ease}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.vwave{display:flex;align-items:center;gap:3px;height:40px}
+.vbar{width:3px;border-radius:2px;background:var(--accent);animation:wv .65s ease-in-out infinite}
+.vbar:nth-child(1){height:10px;animation-delay:0s}
+.vbar:nth-child(2){height:22px;animation-delay:.07s}
+.vbar:nth-child(3){height:34px;animation-delay:.14s}
+.vbar:nth-child(4){height:40px;animation-delay:.21s}
+.vbar:nth-child(5){height:28px;animation-delay:.28s}
+.vbar:nth-child(6){height:18px;animation-delay:.35s}
+.vbar:nth-child(7){height:30px;animation-delay:.42s}
+@keyframes wv{0%,100%{transform:scaleY(.3);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+.vlabel{font-size:13px;color:var(--text2)}
+.vstop{width:44px;height:44px;border-radius:50%;border:none;background:var(--bg);color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font);}
+
+/* ── Modal ── */
+.modal-bg { position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:0; }
+.modal-bg.show { display:flex; }
+.modal { background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:75%;overflow-y:auto;animation:sup .25s ease; }
+.modal-head { padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface); }
+.modal-title { font-size:14px;font-weight:600;color:var(--text); }
+.modal-close { border:none;background:transparent;font-size:20px;cursor:pointer;color:var(--text2);line-height:1; }
+.modal-body { padding:16px; }
+.modal-preview { width:100%;height:160px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:12px; }
+.modal-ocr { background:var(--accent-dim);border:1px solid #D4E3FA;border-radius:9px;padding:11px;font-size:13px;color:var(--text2);line-height:1.7; }
+.modal-ocr-t { font-size:11px;font-weight:600;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:4px; }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+
+
+  <div class="safe-top"></div>
+  <div class="topnav">
+    <div class="agent-ava">⚖</div>
+    <div class="agent-meta">
+      <div class="agent-name">申诉助手</div>
+      <div class="agent-online"><span class="online-dot"></span>在线 · 随时为你服务</div>
+    </div>
+
+  </div>
+
+  <div class="stepbar">
+    <div class="step done"  id="st1"><div class="step-dot" id="sd1">✓</div><div class="step-lbl">了解原因</div></div>
+    <div class="step active" id="st2"><div class="step-dot" id="sd2">2</div><div class="step-lbl">准备材料</div></div>
+    <div class="step"       id="st3"><div class="step-dot" id="sd3">3</div><div class="step-lbl">填写理由</div></div>
+    <div class="step"       id="st4"><div class="step-dot" id="sd4">4</div><div class="step-lbl">提交申诉</div></div>
+  </div>
+
+  <div class="chat" id="chat">
+
+    <!-- Stage 1: 了解原因 -->
+    <div class="row agent">
+      <div class="ava">⚖</div>
+      <div class="bwrap">
+        <div class="bubble">你好，我是申诉助手。看到你的账号受到了处理，先别担心——我来帮你理清情况，一步步完成申诉。</div>
+        <div class="btime">09:30</div>
+      </div>
+    </div>
+
+    <div class="row agent">
+      <div class="ava">⚖</div>
+      <div class="bwrap">
+        <div class="bubble">
+          已查到这次处罚详情：
+          <div class="card">
+            <div class="ch">📋 处罚记录</div>
+            <div class="cb">
+              <div class="ir"><div class="il">违规类型</div><div class="iv"><span class="tag tag-o">虚假信息传播</span></div></div>
+              <div class="ir"><div class="il">依据条款</div><div class="iv">《社区内容规范》第 3.2 条</div></div>
+              <div class="ir"><div class="il">处罚措施</div><div class="iv">内容下架 + 限流 7 天</div></div>
+              <div class="ir"><div class="il">涉及内容</div><div class="iv">「关于XX政策解读」帖子</div></div>
+              <div class="notice">💡 引用官方媒体的内容有时会被系统误判。这类情况申诉通过率较高，有来源的话就更有把握。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row user">
+      <div class="ava">我</div>
+      <div class="bwrap">
+        <div class="bubble" style="background:var(--user-bg);color:#fff;border-bottom-right-radius:3px;">我只是引用了腾讯新闻的报道，根本没有造谣，这个判定太冤了</div>
+        <div class="btime">09:32</div>
+      </div>
+    </div>
+
+    <div class="row agent">
+      <div class="ava">⚖</div>
+      <div class="bwrap">
+        <div class="bubble">完全理解。有明确来源的内容被误判确实委屈。只要能提供原始出处，这类申诉成功率很高——我们继续看看需要准备什么。</div>
+      </div>
+    </div>
+
+    <!-- Stage 2: 准备材料 -->
+    <div class="row agent">
+      <div class="ava">⚖</div>
+      <div class="bwrap">
+        <div class="bubble">
+          检索了你的账号记录，这是本次申诉需要的材料：
+          <div class="card">
+            <div class="ch">📦 材料清单</div>
+            <div class="cb">
+              <div class="mr">
+                <div class="mi">🪪</div>
+                <div style="flex:1"><div class="mn">实名认证资料</div><div class="ms">2023-06 已验证，可直接复用</div></div>
+                <span class="mb mb-ok">已就绪</span>
+              </div>
+              <div class="mr">
+                <div class="mi">📄</div>
+                <div style="flex:1"><div class="mn">历史正常内容</div><div class="ms">已自动抓取 3 条</div></div>
+                <span class="mb mb-ok">已就绪</span>
+              </div>
+              <div class="mr">
+                <div class="mi">📝</div>
+                <div style="flex:1"><div class="mn">创作背景说明</div><div class="ms">AI 协助起草</div></div>
+                <span class="mb mb-ai">AI填写</span>
+              </div>
+              <div class="mr">
+                <div class="mi">📰</div>
+                <div style="flex:1"><div class="mn">原创作品证明</div><div class="ms">照片/视频拍摄参数 · 需上传</div></div>
+                <span class="mb mb-nd" id="badge-news">待上传</span>
+              </div>
+              <div class="upload-zone" id="upload-zone" onclick="handleUpload()">
+                <div style="font-size:22px;margin-bottom:4px;">＋</div>
+                上传原创作品证明
+                <div class="upload-hint">请上传照片或视频的拍摄参数信息，作品截图需要和参数信息出现在同一画面内</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OCR result — injected by JS -->
+
+    <!-- Stage 3: 填写理由 — injected by JS -->
+
+    <!-- Stage 4: 提交申诉 — injected by JS -->
+
+  </div><!-- /chat -->
+
+  <div class="qbar" id="qbar">
+    <button class="qbtn" onclick="handleUpload()">上传截图</button>
+    <button class="qbtn" onclick="qreply(this,'违规详情')">违规详情</button>
+  </div>
+
+  <div class="ibar">
+    <div class="ibar-row" id="iwrap">
+      <textarea class="txt" id="inp"
+        placeholder="发消息或按住说话..."
+        oninput="onInput(this)"
+        onkeydown="handleKey(event)"></textarea>
+      <span class="voice-hint" id="vhint">松开发送，滑动取消</span>
+
+      <!-- Mic button -->
+      <button class="mic-btn" id="micBtn"
+        onmousedown="startVoice(event)"
+        onmouseup="endVoice(event)"
+        ontouchstart="startVoice(event)"
+        ontouchend="endVoice(event)">
+        <span class="mic-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="12" rx="3" fill="#fff" stroke="none"/>
+            <path d="M5 10a7 7 0 0 0 14 0"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="9" y1="22" x2="15" y2="22"/>
+          </svg>
+        </span>
+        <span class="mic-wave">
+          <span class="mwbar"></span><span class="mwbar"></span>
+          <span class="mwbar"></span><span class="mwbar"></span>
+          <span class="mwbar"></span>
+        </span>
+      </button>
+
+      <!-- Send button (hidden by default) -->
+      <button class="send-btn" id="sendBtn" onclick="sendMsg()">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 4l8 16-8-4-8 4 8-16z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="vpanel" id="vpanel">
+    <div style="font-size:14px;font-weight:600;color:var(--text)">正在聆听…</div>
+    <div class="vwave">
+      <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
+      <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
+      <div class="vbar"></div>
+    </div>
+    <div class="vlabel">松开发送 · 点取消放弃</div>
+    <button class="vstop" onclick="cancelVoice()">取消</button>
+  </div>
+
+  <!-- Click-outside-to-close modal -->
+  <div class="modal-bg" id="modal" onclick="handleModalBgClick(event)">
+    <div class="modal" id="modal-inner">
+      <div class="modal-head">
+        <div class="modal-title" id="modal-title">文件预览</div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-preview" id="modal-preview">🖼️</div>
+        <div class="modal-ocr">
+          <div class="modal-ocr-t">✦ OCR 识别内容摘要</div>
+          来源：腾讯新闻官方账号，发布于 2024-01-13；标题：「国务院最新政策解读：XX领域三项重要部署」；内容为政策原文转述，权威可信，无虚假成分。经 AI 分析，<strong>可直接作为申诉有效证据</strong>。
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<script>
+const $ = id => document.getElementById(id);
+
+/* ── State ── */
+let currentStage = 2;
+let uploadDone = false;
+let draftGenerated = false;
+let previewGenerated = false;
+let voiceHeld = false;
+let manualMode = null;        // null | 'awaiting_reason' | 'awaiting_more'
+let manualReasons = [];       // collected user inputs in manual mode
+
+/* ── Helpers ── */
+function scrollB(delay=60) {
+  setTimeout(() => { $('chat').scrollTop = $('chat').scrollHeight; }, delay);
+}
+
+function onInput(el) {
+  // Auto-resize
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  // Multi-line: align buttons to bottom; single-line: keep centered
+  const wrap = $('iwrap');
+  wrap.style.alignItems = el.scrollHeight > 40 ? 'flex-end' : 'center';
+  // Toggle send button visibility
+  const sendBtn = $('sendBtn');
+  if (el.value.trim().length > 0) {
+    sendBtn.classList.add('visible');
+  } else {
+    sendBtn.classList.remove('visible');
+  }
+}
+
+function autoResize(el) { onInput(el); }
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+/* ── Step bar ── */
+// Only visually advance, never let user click forward past current stage
+function setStep(n) {
+  currentStage = n;
+  for (let i = 1; i <= 4; i++) {
+    const st = $('st' + i), sd = $('sd' + i);
+    st.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+    sd.textContent = i < n ? '✓' : i;
+  }
+}
+
+/* ── Typing then callback ── */
+function typeThen(delay, cb) {
+  const c = $('chat');
+  const tr = document.createElement('div');
+  tr.className = 'typing-row';
+  tr.innerHTML = `<div class="ava">⚖</div><div class="typing-b"><span></span><span></span><span></span></div>`;
+  c.appendChild(tr); scrollB();
+  setTimeout(() => { tr.remove(); cb(); scrollB(); }, delay);
+}
+
+/* ── Add messages ── */
+function addUser(html) {
+  const c = $('chat'), d = document.createElement('div');
+  d.className = 'row user';
+  d.innerHTML = `<div class="ava" style="background:#BFC7D4;color:var(--text)">我</div><div class="bwrap" style="align-items:flex-end"><div class="bubble" style="background:var(--user-bg);color:#fff;border-bottom-right-radius:3px">${html}</div></div>`;
+  c.appendChild(d); scrollB();
+}
+
+function addAgent(html) {
+  const c = $('chat'), d = document.createElement('div');
+  d.className = 'row agent';
+  d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">${html}</div></div>`;
+  c.appendChild(d); scrollB();
+}
+
+/* ── Quick replies ── */
+function setQ(arr) {
+  $('qbar').innerHTML = arr.map(t => `<button class="qbtn" onclick="qreply(this,'${t}')">${t}</button>`).join('');
+}
+
+function qreply(btn, text) {
+  const replies = {
+    '违规详情':         () => { addUser('查看违规详情'); typeThen(800, () => addAgent('本次违规记录如下：<br><br>• <b>违规类型：</b>虚假信息传播<br>• <b>依据条款：</b>《社区内容规范》第 3.2 条<br>• <b>处罚措施：</b>内容下架 + 限流 7 天<br>• <b>涉及内容：</b>「关于XX政策解读」帖子<br>• <b>处罚时间：</b>2024-01-15<br><br>如有异议可继续完成申诉流程。')); },
+    '已上传完成':       () => proceedStage3(),
+    '跳过':             () => proceedStage3(),
+    '生成提交预览':     () => { if (draftGenerated) previewSubmit(); else addAgent('请先生成或填写申诉理由草稿。'); },
+    '确认提交':         () => { if (previewGenerated) submitFinal(); },
+    '返回修改':         () => goBackDraft(),
+    // Manual draft flow
+    '没有了，帮我整理': () => { addUser('没有了，帮我整理'); compileManualDraft(); },
+    '不需要补充，直接提交预览': () => { addUser('不需要补充，直接提交预览'); compileManualDraft(); },
+    '我还想补充':       () => { addUser('我还想补充'); typeThen(600, () => { addAgent('好的，请继续说。'); }); },
+    '查看申诉案例':     () => { addUser(text); typeThen(900, () => addAgent('已成功申诉的案例主要有两类：①引用权威媒体被误判——提供截图后平均 2 天解除；②创作内容被误识别——补充创作说明后通过率达 82%。')); },
+  };
+  if (replies[text]) { replies[text](); return; }
+  addUser(text);
+  if (manualMode) { handleManualInput(text); return; }
+  typeThen(900, () => addAgent('好的，我来帮你处理这个问题。'));
+}
+
+/* ── Stage 2: Upload ── */
+function handleUpload() {
+  if (uploadDone) return; // prevent double-trigger
+  uploadDone = true;
+
+  // Mark upload zone as done
+  const uz = $('upload-zone');
+  uz.className = 'upload-zone done';
+  uz.innerHTML = '✓ 腾讯新闻截图.jpg 已上传';
+  uz.onclick = null;
+
+  // Update badge
+  $('badge-news').className = 'mb mb-ok';
+  $('badge-news').textContent = '已上传';
+
+  addUser('📎 腾讯新闻截图.jpg');
+
+  typeThen(1300, () => {
+    const c = $('chat'), d = document.createElement('div');
+    d.className = 'row agent';
+    d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
+      收到，正在识别文件内容…
+      <div class="media-card" onclick="openModal('img')">
+        <div class="media-thumb" style="background:linear-gradient(135deg,#EEF3FD,#DBE9FF)">
+          🖼️<div class="media-overlay"><div class="play-btn">🔍</div></div>
+        </div>
+        <div class="media-meta">
+          <div class="media-name">腾讯新闻截图.jpg</div>
+          <div class="media-info">图片 · 1.2 MB · 点击预览</div>
+          <div class="ocr-badge">✦ OCR 识别完成</div>
+        </div>
+      </div>
+      <div class="ocr-panel">
+        <div class="ocr-panel-title">✦ 内容摘要</div>
+        来源：腾讯新闻官方账号，发布于 2024-01-13；标题「国务院最新政策解读：XX领域三项重要部署」；内容为政策原文转述，无虚假成分。<br><br>
+        <span style="color:var(--green);font-weight:500">✓ 可作为有力申诉证据</span>
+      </div>
+      <div class="brow">
+        <button class="btn btn-p" onclick="proceedStage3()">下一步：填写理由 →</button>
+        <button class="btn btn-g" onclick="qreply(this,'继续上传')">继续上传</button>
+      </div>
+    </div></div>`;
+    c.appendChild(d); scrollB();
+    setQ(['继续上传', '已上传完成', '跳过']);
+  });
+}
+
+/* ── Stage 3: 填写理由 ── */
+function proceedStage3() {
+  if ($('framework-card')) return; // already injected
+  setStep(3);
+
+  typeThen(900, () => {
+    const c = $('chat'), d = document.createElement('div');
+    d.className = 'row agent';
+    d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
+      材料已就绪。接下来写申诉理由——建议按以下框架来，审核员更容易理解：
+      <div class="card" id="framework-card">
+        <div class="ch">✍ 申诉理由框架</div>
+        <div class="cb">
+          <div class="fw"><div class="fw-n">1</div><div><div class="fw-t">为什么认为自己没违规</div><div class="fw-h">内容依据、来源权威性，反驳判定逻辑</div></div></div>
+          <div class="fw"><div class="fw-n">2</div><div><div class="fw-t">创作背景与初衷</div><div class="fw-h">为什么发这条内容，传播意图是什么</div></div></div>
+          <div class="fw"><div class="fw-n">3</div><div><div class="fw-t">账号历史记录佐证</div><div class="fw-h">良好记录、首次违规，说明一贯合规</div></div></div>
+          <div class="fw"><div class="fw-n">4</div><div><div class="fw-t">整改承诺</div><div class="fw-h">表达配合意愿，说明后续注意点</div></div></div>
+          <div class="brow">
+            <button class="btn btn-p" onclick="generateDraft()">✦ AI 帮我起草</button>
+            <button class="btn btn-g" onclick="manualWrite()">自己写</button>
+          </div>
+        </div>
+      </div>
+    </div></div>`;
+    c.appendChild(d); scrollB();
+    setQ(['AI帮我起草', '自己写']);
+  });
+}
+
+/* ── Draft generation ── */
+function generateDraft() {
+  if ($('draftField')) return; // already injected
+  addUser('请帮我起草申诉理由');
+
+  typeThen(1600, () => {
+    draftGenerated = true;
+    const c = $('chat'), d = document.createElement('div');
+    d.className = 'row agent';
+    d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
+      草稿已生成，可直接在下方编辑修改：
+      <div class="card">
+        <div class="ch">📝 申诉理由草稿</div>
+        <div class="cb">
+          <textarea class="edit-field" id="draftField" rows="6">尊敬的审核团队：
+
+本人对此次违规处理持有异议，特此申诉。
+
+一、内容来源说明：涉事内容均转述自腾讯新闻官方账号（2024-01-13），属对权威媒体的合理解读，不存在虚构信息。
+
+二、创作初衷：旨在帮助社区用户了解最新政策动态，传递正确信息，无散布谣言之意图。
+
+三、账号记录：注册以来发布内容 47 篇，获平台优质认定 12 次，此为首次被判违规。
+
+恳请重新审核，谢谢。</textarea>
+          <div class="brow">
+            <button class="btn btn-p" onclick="previewSubmit()">生成提交预览 →</button>
+            <button class="btn btn-g" onclick="aiPolish()">✦ AI 优化语气</button>
+          </div>
+        </div>
+      </div>
+    </div></div>`;
+    c.appendChild(d); scrollB();
+    setQ(['生成提交预览', 'AI优化语气', '返回修改']);
+  });
+}
+
+function manualWrite() {
+  // Enter manual input mode
+  manualMode = 'awaiting_reason';
+  typeThen(800, () => {
+    addAgent('好的，请直接描述你的申诉理由。<br><br>可以说说：<b>为什么认为自己没违规</b>，或者<b>内容的创作背景</b>——随便聊，我来帮你整理成正式申诉文字。');
+    setQ(['不需要补充，直接提交预览', 'AI帮我起草']);
+  });
+}
+
+function handleManualInput(text) {
+  // User sent a message while in manual mode
+  if (manualMode === 'awaiting_reason') {
+    // First input received — acknowledge and ask if they want to add more
+    manualMode = 'awaiting_more';
+    manualReasons.push(text);
+    typeThen(900, () => {
+      addAgent('收到！还有想补充的吗？比如账号历史、事件背景等——如果没有，我现在就帮你整理成申诉理由。');
+      setQ(['没有了，帮我整理', '我还想补充']);
+    });
+  } else if (manualMode === 'awaiting_more') {
+    // User added more — collect and offer again
+    manualReasons.push(text);
+    typeThen(900, () => {
+      addAgent('好，已记录。还有要补充的吗？');
+      setQ(['没有了，帮我整理', '我还想补充']);
+    });
+  }
+}
+
+function compileManualDraft() {
+  // Build draft from collected reasons, then go to preview
+  manualMode = null;
+  const combined = manualReasons.join('；');
+  typeThen(1400, () => {
+    draftGenerated = true;
+    const c = $('chat'), d = document.createElement('div');
+    d.className = 'row agent';
+    d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
+      已根据你的描述整理好申诉理由，可以继续修改：
+      <div class="card">
+        <div class="ch">📝 申诉理由草稿</div>
+        <div class="cb">
+          <textarea class="edit-field" id="draftField" rows="6">尊敬的审核团队：
+
+本人对此次违规处理持有异议，特此申诉。
+
+${combined}
+
+恳请平台审核团队重新审视本次内容，感谢您的关注与处理。</textarea>
+          <div class="brow">
+            <button class="btn btn-p" onclick="previewSubmit()">生成提交预览 →</button>
+            <button class="btn btn-g" onclick="aiPolish()">✦ AI 优化语气</button>
+          </div>
+        </div>
+      </div>
+    </div></div>`;
+    c.appendChild(d); scrollB();
+    setQ(['生成提交预览', 'AI优化语气']);
+  });
+}
+
+function aiPolish() {
+  const field = $('draftField');
+  if (!field) { addAgent('请先生成草稿后再优化。'); return; }
+  let v = field.value;
+  v = v.replace('持有异议，特此申诉', '对此次处理结果存在异议，依据相关规定提起申诉');
+  v = v.replace('恳请重新审核，谢谢', '恳请平台审核团队重新审视本次内容，感谢您的关注与处理');
+  field.value = v;
+  autoResize(field);
+  addAgent('已优化语气，措辞更正式。你可以继续手动调整。');
+}
+
+/* ── Stage 4: Preview & Submit ── */
+function previewSubmit() {
+  const field = $('draftField');
+  if (!field) { addAgent('请先生成或编写申诉理由草稿。'); return; }
+  if ($('preview-card')) return; // already showing
+  draftGenerated = true;
+
+  const text = field.value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  setStep(4);
+
+  typeThen(900, () => {
+    previewGenerated = true;
+    const c = $('chat'), d = document.createElement('div');
+    d.className = 'row agent';
+    d.setAttribute('id', 'preview-row');
+    d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
+      申诉预览如下，确认无误后提交：
+      <div class="card" id="preview-card">
+        <div class="ch">📄 提交预览</div>
+        <div class="cb">
+          <div class="ir"><div class="il">申请人</div><div class="iv">用户_张同学</div></div>
+          <div class="ir"><div class="il">处罚单号</div><div class="iv">#VP20240115-0342</div></div>
+          <div class="ir"><div class="il">违规类型</div><div class="iv"><span class="tag tag-o">虚假信息传播</span></div></div>
+          <div class="ir"><div class="il">附件</div><div class="iv" style="display:flex;gap:5px;flex-wrap:wrap">
+            <span class="tag tag-g">✓ 实名认证</span>
+            <span class="tag tag-g">✓ 新闻截图</span>
+            <span class="tag tag-g">✓ 历史记录</span>
+          </div></div>
+          <div class="preview-section">
+            <div class="preview-title">申诉理由</div>
+            <div class="preview-block">${text}</div>
+          </div>
+          <div class="brow">
+            <button class="btn btn-p" onclick="submitFinal()">确认提交</button>
+            <button class="btn btn-g" onclick="goBackDraft()">← 返回修改</button>
+          </div>
+        </div>
+      </div>
+    </div></div>`;
+    c.appendChild(d); scrollB();
+    setQ(['确认提交', '返回修改']);
+  });
+}
+
+function goBackDraft() {
+  setStep(3);
+  previewGenerated = false;
+  // Remove preview node so it can be re-generated with latest draft content
+  const pr = $('preview-row');
+  if (pr) pr.remove();
+  addAgent('好的，你可以继续修改申诉理由草稿。');
+  setTimeout(() => {
+    const field = $('draftField');
+    if (field) { field.focus(); field.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }, 400);
+  setQ(['生成提交预览', 'AI优化语气']);
+}
+
+let submitDone = false;
+function submitFinal() {
+  if (submitDone) return;
+  submitDone = true;
+
+  typeThen(1000, () => {
+    const c = $('chat'), d = document.createElement('div');
+    d.className = 'row agent';
+    d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
+      <div class="result-card">
+        <div class="result-ico">✅</div>
+        <div class="result-title">申诉已成功提交</div>
+        <div class="result-meta">
+          受理编号 <strong>#AP20240115-8821</strong><br>
+          预计 <strong>3–5 个工作日</strong>内出结果<br>
+          结果将通过站内信通知你
+        </div>
+        <div class="result-rate">📊 此类申诉历史通过率约 <strong>78%</strong>，加油！</div>
+      </div>
+    </div></div>`;
+    c.appendChild(d); scrollB();
+    setQ([]);
+  });
+}
+
+/* ── Send message ── */
+function sendMsg() {
+  const inp = $('inp');
+  const text = inp.value.trim();
+  if (!text) return;
+  addUser(text);
+  inp.value = ''; inp.style.height = 'auto';
+  $('sendBtn').classList.remove('visible');
+
+  // Route to manual draft flow if active
+  if (manualMode) {
+    handleManualInput(text);
+    return;
+  }
+  typeThen(1000, () => addAgent('收到，我来帮你处理这个问题。'));
+}
+
+/* ── Voice input ── */
+function startVoice(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
+  voiceHeld = true;
+  $('micBtn').classList.add('held');
+  $('iwrap').classList.add('recording');
+  $('inp').style.display = 'none';
+  $('sendBtn').classList.remove('visible');
+  $('vhint').classList.add('show');
+}
+
+function endVoice(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
+  if (!voiceHeld) return;
+  resetVoiceUI();
+  const inp = $('inp');
+  inp.value = '我引用的是腾讯新闻的官方报道，不应该被认定为违规';
+  onInput(inp);
+}
+
+function cancelVoice() { resetVoiceUI(); }
+
+function resetVoiceUI() {
+  voiceHeld = false;
+  $('micBtn').classList.remove('held');
+  $('iwrap').classList.remove('recording');
+  $('inp').style.display = '';
+  $('vhint').classList.remove('show');
+}
+
+// Safety: reset voice state if page loses focus
+document.addEventListener('visibilitychange', () => { if (document.hidden) resetVoiceUI(); });
+window.addEventListener('blur', resetVoiceUI);
+
+/* ── Media modal ── */
+const mediaTypes = {
+  img: { title: '图片预览 · 腾讯新闻截图.jpg', icon: '🖼️' },
+  vid: { title: '视频预览 · 新闻视频.mp4', icon: '🎬' },
+  aud: { title: '音频预览 · 录音说明.m4a', icon: '🎵' },
+  pdf: { title: 'PDF预览 · 申诉材料.pdf', icon: '📄' },
+};
+
+function openModal(type) {
+  const m = mediaTypes[type] || mediaTypes.img;
+  $('modal-title').textContent = m.title;
+  $('modal-preview').textContent = m.icon;
+  $('modal').classList.add('show');
+}
+
+function closeModal() {
+  $('modal').classList.remove('show');
+}
+
+// Click outside modal inner panel to close (fix #12)
+function handleModalBgClick(e) {
+  if (e.target === $('modal')) closeModal();
+}
+
+/* ── Init ── */
+scrollB(200);
+</script>
+</body>
+</html>
