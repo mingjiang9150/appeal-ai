@@ -193,7 +193,7 @@ body {
   flex-shrink: 0;
   margin-top: 2px;
 }
-.row.user .ava { background: #BFC7D4; color: var(--text); }
+.row.user .ava { background: #BFC7D4; color: var(--text); font-size: 10px; }
 
 .bwrap { max-width: 78%; display: flex; flex-direction: column; gap: 3px; }
 .row.user .bwrap { align-items: flex-end; }
@@ -714,7 +714,7 @@ function typeThen(delay, cb) {
 function addUser(text) {
   const c = $('chat'), d = document.createElement('div');
   d.className = 'row user';
-  d.innerHTML = `<div class="ava" style="background:#BFC7D4;color:var(--text);margin-top:2px">我</div><div class="bwrap" style="align-items:flex-end"><div class="bubble" style="background:var(--user-bg);color:#fff;border-top-right-radius:3px;border-bottom-right-radius:14px">${escHtml(text)}</div></div>`;
+  d.innerHTML = `<div class="ava" style="background:#BFC7D4;color:var(--text);margin-top:2px">Me</div><div class="bwrap" style="align-items:flex-end"><div class="bubble" style="background:var(--user-bg);color:#fff;border-top-right-radius:3px;border-bottom-right-radius:14px">${escHtml(text)}</div></div>`;
   c.appendChild(d); scrollB();
 }
 
@@ -805,7 +805,10 @@ function handleUpload() {
       </div>
       <div class="brow">
         <button class="btn btn-p" onclick="proceedStage3()">下一步：填写理由 →</button>
-        <button class="btn btn-g" onclick="qreply(this,'继续上传')">继续上传</button>
+        <button class="btn btn-g" onclick="qreply(this,'继续上传')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          继续上传
+        </button>
       </div>
     </div></div>`;
     c.appendChild(d); scrollB();
@@ -821,24 +824,21 @@ function proceedStage3() {
   typeThen(900, () => {
     const c = $('chat'), d = document.createElement('div');
     d.className = 'row agent';
-    d.innerHTML = `<div class="ava">⚖</div><div class="bwrap"><div class="bubble">
-      材料已就绪。接下来写申诉理由——建议按以下框架来，审核员更容易理解：
+    d.innerHTML = `<div class="ava" style="margin-top:2px">⚖</div><div class="bwrap"><div class="bubble">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">接下来写申诉理由</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px;">材料已就绪。建议按以下四个维度来写，审核员会更容易理解你的情况，申诉成功率也更高。</div>
       <div class="card" id="framework-card">
-        <div class="ch">✍ 申诉理由框架</div>
+        <div class="ch" style="font-size:13px;font-weight:500;color:var(--text2);text-transform:none;letter-spacing:0;">可以说说</div>
         <div class="cb">
           <div class="fw"><div class="fw-n">1</div><div><div class="fw-t">为什么认为自己没违规</div><div class="fw-h">内容依据、来源权威性，反驳判定逻辑</div></div></div>
           <div class="fw"><div class="fw-n">2</div><div><div class="fw-t">创作背景与初衷</div><div class="fw-h">为什么发这条内容，传播意图是什么</div></div></div>
           <div class="fw"><div class="fw-n">3</div><div><div class="fw-t">账号历史记录佐证</div><div class="fw-h">良好记录、首次违规，说明一贯合规</div></div></div>
           <div class="fw"><div class="fw-n">4</div><div><div class="fw-t">整改承诺</div><div class="fw-h">表达配合意愿，说明后续注意点</div></div></div>
-          <div class="brow">
-            <button class="btn btn-p" onclick="generateDraft()">✦ AI 帮我起草</button>
-            <button class="btn btn-g" onclick="manualWrite()">自己写</button>
-          </div>
         </div>
       </div>
     </div></div>`;
     c.appendChild(d); scrollB();
-    setQ(['AI帮我起草', '自己写']);
+    setQ(['AI帮我起草']);
   });
 }
 
