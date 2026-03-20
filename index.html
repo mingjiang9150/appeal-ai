@@ -291,18 +291,17 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 24px;
-  padding: 0 6px 0 14px;
+  padding: 10px 6px 10px 14px;
   min-height: 46px;
   transition: border-color .2s, box-shadow .2s;
 }
 .ibar-row:focus-within {
   border-color: #C8C8C6;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
 }
 .ibar-row.recording {
   border-color: var(--accent);
   background: var(--accent-dim);
-  box-shadow: 0 0 0 3px rgba(28,100,242,.08);
 }
 
 /* Textarea */
@@ -311,9 +310,9 @@ body {
   border: none; background: transparent;
   font-size: 15px; font-family: var(--font); color: var(--text);
   outline: none;
-  line-height: 20px;
+  line-height: 22px;
   padding: 0;
-  min-height: 20px; max-height: 120px;
+  min-height: 22px; max-height: 88px;
   overflow-y: auto;
   word-break: break-word;
   white-space: pre-wrap;
@@ -603,15 +602,11 @@ function escHtml(s) {
 }
 
 function onInput(el) {
-  // Auto-resize handled by content flow
-  const wrap = $('iwrap');
-  wrap.style.alignItems = el.scrollHeight > 34 ? 'flex-end' : 'center';
   $('sendBtn').classList.toggle('visible', el.innerText.trim().length > 0);
 }
 
 function autoResize(el) {
-  const wrap = $('iwrap');
-  wrap.style.alignItems = el.scrollHeight > 34 ? 'flex-end' : 'center';
+  // no-op for contenteditable, kept for compatibility
 }
 
 function handleKey(e) {
@@ -976,7 +971,6 @@ function sendMsg() {
   addUser(text);
   inp.innerText = '';
   $('sendBtn').classList.remove('visible');
-  $('iwrap').style.alignItems = 'center';
 
   if (manualMode) {
     handleManualInput(text);
