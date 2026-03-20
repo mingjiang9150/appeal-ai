@@ -73,6 +73,55 @@ body {
 
 
 
+/* ── Status Bar ── */
+.statusbar {
+  height: 50px;
+  padding: 14px 22px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.sb-time {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.sb-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+}
+.sb-battery {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.sb-battery-fill {
+  width: 22px; height: 11px;
+  border: 1.5px solid var(--text);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+.sb-battery-fill::after {
+  content: '';
+  position: absolute;
+  left: 1.5px; top: 1.5px;
+  width: 80%; height: calc(100% - 3px);
+  background: var(--text);
+  border-radius: 1px;
+}
+.sb-battery-tip {
+  width: 2px; height: 5px;
+  background: var(--text);
+  border-radius: 0 1px 1px 0;
+  opacity: 0.4;
+}
+
 /* ── iOS safe area top spacer ── */
 .safe-top {
   height: env(safe-area-inset-top, 44px);
@@ -281,7 +330,7 @@ body {
   background: var(--bg);
   border-top: 1px solid var(--border-sm);
   flex-shrink: 0;
-  padding: 10px 16px calc(env(safe-area-inset-bottom, 20px) + 10px);
+  padding: 12px 16px calc(env(safe-area-inset-bottom, 16px) + 16px);
 }
 
 /* Single unified input row */
@@ -291,7 +340,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 24px;
-  padding: 0 6px 0 16px;
+  padding: 0 6px 0 14px;
   min-height: 46px;
   transition: border-color .2s, box-shadow .2s;
 }
@@ -310,15 +359,21 @@ body {
   flex: 1;
   border: none; background: transparent;
   font-size: 15px; font-family: var(--font); color: var(--text);
-  outline: none; resize: none;
-  line-height: 22px;
-  padding: 12px 0;
-  min-height: 46px; max-height: 120px;
+  outline: none;
+  line-height: 20px;
+  padding: 0;
+  min-height: 20px; max-height: 120px;
   overflow-y: auto;
-  display: block;
+  word-break: break-word;
+  white-space: pre-wrap;
+  align-self: center;
+}
+.txt:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text3);
+  pointer-events: none;
 }
 .txt::-webkit-scrollbar { display: none; }
-.txt::placeholder { color: var(--text3); }
 
 /* Voice recording hint */
 .voice-hint {
@@ -330,7 +385,7 @@ body {
 
 /* Mic button */
 .mic-btn {
-  width: 34px; height: 34px;
+  width: 26px; height: 26px;
   border-radius: 50%;
   border: none;
   background: var(--text);
@@ -340,7 +395,7 @@ body {
   flex-shrink: 0;
   transition: background .15s, transform .1s;
   user-select: none; -webkit-user-select: none;
-  margin-left: 6px;
+  margin-left: 4px;
   align-self: center;
 }
 .mic-btn:active { transform: scale(.9); }
@@ -350,9 +405,9 @@ body {
 }
 @keyframes micglow {
   0%,100% { box-shadow: 0 0 0 0 rgba(28,100,242,.35); }
-  50%      { box-shadow: 0 0 0 7px rgba(28,100,242,0); }
+  50%      { box-shadow: 0 0 0 6px rgba(28,100,242,0); }
 }
-.mic-btn svg { width: 20px; height: 20px; }
+.mic-btn svg { width: 14px; height: 14px; }
 
 /* Wave bars — shown when held, hidden otherwise */
 .mic-wave {
@@ -374,7 +429,7 @@ body {
 
 /* Send button — appears when text present */
 .send-btn {
-  width: 34px; height: 34px;
+  width: 26px; height: 26px;
   border-radius: 50%;
   border: none;
   background: var(--accent);
@@ -382,7 +437,7 @@ body {
   cursor: pointer;
   display: none; align-items: center; justify-content: center;
   flex-shrink: 0;
-  margin-left: 2px;
+  margin-left: 4px;
   transition: opacity .15s, transform .15s;
 }
 .send-btn.visible {
@@ -391,7 +446,7 @@ body {
 }
 @keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
 .send-btn:active { transform: scale(.88); opacity: .85; }
-.send-btn svg { width: 16px; height: 16px; }
+.send-btn svg { width: 13px; height: 13px; }
 
 /* ── Voice panel ── */
 .vpanel { position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 28px;display:none;flex-direction:column;align-items:center;gap:16px;box-shadow:0 -6px 30px rgba(0,0,0,.1);z-index:99; }
@@ -428,7 +483,30 @@ body {
 
 
 
-  <div class="safe-top"></div>
+  <!-- Status Bar -->
+  <div class="statusbar">
+    <span class="sb-time" id="sbTime">9:41</span>
+    <div class="sb-right">
+      <!-- Signal bars -->
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor">
+        <rect x="0" y="8" width="3" height="4" rx="0.5" opacity="1"/>
+        <rect x="4.5" y="5.5" width="3" height="6.5" rx="0.5" opacity="1"/>
+        <rect x="9" y="3" width="3" height="9" rx="0.5" opacity="1"/>
+        <rect x="13.5" y="0" width="3" height="12" rx="0.5" opacity="0.3"/>
+      </svg>
+      <!-- WiFi -->
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-linecap="round">
+        <path d="M8 9.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" fill="currentColor" stroke="none"/>
+        <path d="M4.5 7.5a4.9 4.9 0 0 1 7 0" stroke-width="1.4"/>
+        <path d="M1.5 5a8.5 8.5 0 0 1 13 0" stroke-width="1.4"/>
+      </svg>
+      <!-- Battery -->
+      <div class="sb-battery">
+        <div class="sb-battery-fill"></div>
+        <div class="sb-battery-tip"></div>
+      </div>
+    </div>
+  </div>
   <div class="topnav">
     <div class="agent-ava">⚖</div>
     <div class="agent-meta">
@@ -503,17 +581,15 @@ body {
 
   </div><!-- /chat -->
 
-  <div class="qbar" id="qbar">
-    <button class="qbtn" onclick="handleUpload()">上传截图</button>
-    <button class="qbtn" onclick="qreply(this,'违规详情')">违规详情</button>
-  </div>
+  <div class="qbar" id="qbar"></div>
 
   <div class="ibar">
     <div class="ibar-row" id="iwrap">
-      <textarea class="txt" id="inp"
-        placeholder="发消息或按住说话..."
+      <div class="txt" id="inp"
+        contenteditable="true"
+        data-placeholder="发消息或按住说话..."
         oninput="onInput(this)"
-        onkeydown="handleKey(event)"></textarea>
+        onkeydown="handleKey(event)"></div>
       <span class="voice-hint" id="vhint">松开发送，滑动取消</span>
 
       <!-- Mic button -->
@@ -599,18 +675,15 @@ function escHtml(s) {
 }
 
 function onInput(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  // Auto-resize handled by content flow
   const wrap = $('iwrap');
-  wrap.style.alignItems = el.scrollHeight > 50 ? 'flex-end' : 'center';
-  $('sendBtn').classList.toggle('visible', el.value.trim().length > 0);
+  wrap.style.alignItems = el.scrollHeight > 34 ? 'flex-end' : 'center';
+  $('sendBtn').classList.toggle('visible', el.innerText.trim().length > 0);
 }
 
 function autoResize(el) {
-  // Resize only — does NOT toggle send button (safe to call from aiPolish)
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-  $('iwrap').style.alignItems = el.scrollHeight > 50 ? 'flex-end' : 'center';
+  const wrap = $('iwrap');
+  wrap.style.alignItems = el.scrollHeight > 34 ? 'flex-end' : 'center';
 }
 
 function handleKey(e) {
@@ -960,8 +1033,8 @@ function submitFinal() {
     setQ(['申诉进度']);
     // Disable input area after submission
     const inp = $('inp');
-    inp.disabled = true;
-    inp.placeholder = '申诉已提交，等待审核中…';
+    inp.contentEditable = 'false';
+    inp.dataset.placeholder = '申诉已提交，等待审核中…';
     $('micBtn').style.pointerEvents = 'none';
     $('micBtn').style.opacity = '0.35';
   });
@@ -970,13 +1043,13 @@ function submitFinal() {
 /* ── Send message ── */
 function sendMsg() {
   const inp = $('inp');
-  const text = inp.value.trim();
+  const text = inp.innerText.trim();
   if (!text) return;
   addUser(text);
-  inp.value = ''; inp.style.height = 'auto';
+  inp.innerText = '';
   $('sendBtn').classList.remove('visible');
+  $('iwrap').style.alignItems = 'center';
 
-  // Route to manual draft flow if active
   if (manualMode) {
     handleManualInput(text);
     return;
@@ -1002,8 +1075,15 @@ function endVoice(e) {
   if (!voiceHeld) return;
   resetVoiceUI();
   const inp = $('inp');
-  inp.value = '我引用的是腾讯新闻的官方报道，不应该被认定为违规';
+  inp.innerText = '我引用的是腾讯新闻的官方报道，不应该被认定为违规';
   onInput(inp);
+  // Move cursor to end
+  const range = document.createRange();
+  range.selectNodeContents(inp);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
 
 function cancelVoice() { resetVoiceUI(); }
@@ -1043,6 +1123,16 @@ function closeModal() {
 function handleModalBgClick(e) {
   if (e.target === $('modal')) closeModal();
 }
+
+/* ── Live clock ── */
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2, '0');
+  $('sbTime').textContent = `${h}:${m}`;
+}
+updateClock();
+setInterval(updateClock, 10000);
 
 /* ── Init ── */
 scrollB(200);
